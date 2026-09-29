@@ -1,0 +1,27 @@
+{
+  "name": "backend",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "node --watch --watch-path=src --watch-path=../games --watch-path=../connectors --watch-path=../shared src/main.ts",
+    "start": "node src/main.ts",
+    "db:generate": "drizzle-kit generate",
+    "typecheck": "tsc -p ."
+  },
+  "dependencies": {
+    "@cso/connector-obs": "workspace:*",
+    "@cso/game-mtg": "workspace:*",
+    "@cso/game-pokemon": "workspace:*",
+    "@cso/shared": "workspace:*",
+    "@fastify/static": "^10.1.5",
+    "@fastify/websocket": "^11.3.1",
+    "drizzle-orm": "^0.45.3",
+    "fastify": "^5.12.5",
+    "ws": "^8.18.3"
+  },
+  "devDependencies": {
+    "drizzle-kit": "^0.31.11",
+    "@types/ws": "^8.18.1"
+  }
+}

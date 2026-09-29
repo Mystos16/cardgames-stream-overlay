@@ -1,0 +1,25 @@
+{
+  "name": "cardgames-stream-overlay",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@10.34.5",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "registry": "node scripts/generate-registry.mjs",
+    "postinstall": "node scripts/generate-registry.mjs",
+    "dev": "pnpm registry && pnpm --parallel --filter backend --filter control --filter overlay dev",
+    "build": "pnpm registry && pnpm --filter control --filter overlay build",
+    "start": "pnpm --filter backend start",
+    "db:generate": "pnpm --filter backend db:generate",
+    "typecheck": "pnpm -r typecheck",
+    "test": "vitest run",
+    "test:online": "ONLINE_TESTS=1 vitest run"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "typescript": "^5.9.3",
+    "vitest": "^5.0.2"
+  }
+}

@@ -1,0 +1,7 @@
+node_modules/
+dist/
+data/
+.env
+*.log
+backend/src/generated/
+frontend/control/src/generated/

@@ -1,0 +1,9 @@
+packages:
+  - backend
+  - shared
+  - frontend/*
+  - games/*
+  - connectors/*
+
+onlyBuiltDependencies:
+  - esbuild
