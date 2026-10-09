@@ -101,7 +101,7 @@ export class TcgdexClient {
     const cleaned = name.replace(/^basic\s+/i, "Basic ").replace(/\{([A-Z])\}\s+energy/i, (_, letter: string) => {
       const map: Record<string, string> = { G: "Grass", R: "Fire", W: "Water", L: "Lightning", P: "Psychic", F: "Fighting", D: "Darkness", M: "Metal", Y: "Fairy" };
       return `Basic ${map[letter.toUpperCase()] ?? letter} Energy`;
-    });
+    }).replace(/^(grass|fire|water|lightning|psychic|fighting|darkness|metal|fairy)\s+energy$/i, (_, type: string) => `Basic ${type[0]!.toUpperCase()}${type.slice(1).toLowerCase()} Energy`);
     const list = await this.ctx.http.json<TcgdexBrief[]>(
       `${API}/${this.lang()}/cards?name=eq:${encodeURIComponent(cleaned)}&sort:field=id&sort:order=DESC`,
     );
@@ -120,7 +120,7 @@ export class TcgdexClient {
         } else if (entry.identifiers.set && entry.identifiers.number) {
           raw = await this.bySetNumber(entry.identifiers.set, entry.identifiers.number);
         }
-        raw ??= await this.byName(entry.name);
+        if (!raw?.image) raw = (await this.byName(entry.name)) ?? raw;
         const card = raw ? this.toCard(raw) : null;
         results.push(card ? { entry, card } : { entry, card: null, error: "card not found on TCGdex" });
       } catch (error) {

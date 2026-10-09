@@ -4,9 +4,9 @@ A browser-based stream overlay for trading card games such as **Magic: The Gathe
 and the **Pokemon Trading Card Game**. Add it to OBS or Streamlabs as a Browser Source
 and update it live from a separate control panel.
 
-> Status: early development.
+> Status: early development. See the [setup guide](docs/SETUP.md) to get started.
 
-## Planned features
+## Features
 
 - Show high resolution card images on stream with one click from a web control panel
 - Deck library: import decklists and assign them to 2 or more players per match

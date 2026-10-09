@@ -1,6 +1,6 @@
 # Architecture
 
-Status: approved design, not yet implemented.
+Status: implemented (first version). Pokemon uses TCGdex instead of pokemontcg.io.
 
 ## Goals
 
