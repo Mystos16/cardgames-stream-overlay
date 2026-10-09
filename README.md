@@ -11,6 +11,8 @@ and update it live from a separate control panel.
 - Show high resolution card images on stream with one click from a web control panel
 - Deck library: import decklists and assign them to 2 or more players per match
   (including 4 player Commander with sideboards and tokens)
+- Player panels with names and life, poison, Commander damage or Pokemon prizes, laid
+  out by seat (left/right for 2 players, corners for 4), plus best-of match score
 - Card data and images fetched on demand or preloaded before a match, then cached,
   so a prepared match works offline
 - Games as plugins: Magic via [Scryfall](https://scryfall.com/docs/api), Pokemon via

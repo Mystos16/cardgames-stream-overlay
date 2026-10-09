@@ -26,6 +26,23 @@ export function gamePluginContractSuite(factory: GamePluginFactory, options: Gam
       expect(plugin.rateLimit.requestsPerSecond).toBeGreaterThan(0);
     });
 
+    it("declares valid match formats", () => {
+      expect(plugin.formats.length).toBeGreaterThan(0);
+      const ids = plugin.formats.map((format) => format.id);
+      expect(new Set(ids).size).toBe(ids.length);
+      for (const format of plugin.formats) {
+        expect(format.minPlayers).toBeGreaterThanOrEqual(1);
+        expect(format.maxPlayers).toBeGreaterThanOrEqual(format.minPlayers);
+        expect(format.maxPlayers).toBeLessThanOrEqual(6 * (format.teamSize ?? 1));
+        expect(format.defaultPlayers).toBeGreaterThanOrEqual(format.minPlayers);
+        expect(format.defaultPlayers).toBeLessThanOrEqual(format.maxPlayers);
+        expect(format.counters.filter((counter) => counter.primary).length).toBe(1);
+        for (const counter of format.opponentCounters ?? []) {
+          if (counter.alsoCounter) expect(format.counters.some((item) => item.id === counter.alsoCounter)).toBe(true);
+        }
+      }
+    });
+
     for (const sample of options.sampleDecklists) {
       it(`parses sample decklist: ${sample.name}`, () => {
         const result = plugin.parseDecklist(sample.text);

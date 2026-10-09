@@ -12,7 +12,17 @@ Status: implemented (first version). Pokemon uses TCGdex instead of pokemontcg.i
   Adding a game or connector never requires changes to the core.
 - Runs as a single OCI container (Docker for development, also nerdctl and Kubernetes).
 
-Out of scope for now: life/prize counters, timers, scoreboards, other widgets.
+Out of scope for now: timers and other widgets.
+
+## Match formats and scoreboard
+
+Game plugins declare `formats` (player range, optional team size, counters such as life,
+poison or prizes with start value and win/lose threshold, per-opponent counters such as
+commander damage, and whether turns are tracked). The core never hard-codes game rules:
+`shared/src/match.ts` holds a pure reducer (`applyAction`), win/lose evaluation and the
+seat layout (`layoutSlots`), all unit tested. Match state is stored as JSON on the
+`matches` row and broadcast to the overlay as a `board` message whenever it changes for
+the match that is on stream.
 
 ## Stack
 

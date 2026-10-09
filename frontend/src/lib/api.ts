@@ -1,4 +1,4 @@
-import type { Card, ControlMessage, DeckRules, OverlayMessage, ParseWarning, PreloadProgress, SectionDef, SettingsSchema, SettingsValues } from "@cso/shared";
+import type { Board, Card, ControlMessage, DeckRules, FormatDef, MatchAction, MatchState, OverlayMessage, ParseWarning, PreloadProgress, SectionDef, SettingsSchema, SettingsValues } from "@cso/shared";
 
 export class ApiError extends Error {
   status: number;
@@ -27,6 +27,7 @@ export interface GameInfo {
   name: string;
   sections: SectionDef[];
   deckRules?: DeckRules;
+  formats: FormatDef[];
   canSearch: boolean;
 }
 
@@ -61,11 +62,18 @@ export interface Player {
   deckId: number | null;
 }
 
-export interface Match {
+export interface MatchSummary {
   id: number;
   game: string;
   name: string;
+  format: string | null;
+}
+
+export interface Match extends MatchSummary {
+  format: string;
   players: Player[];
+  state: MatchState;
+  board: Board;
 }
 
 export interface SettingsScope {
@@ -93,16 +101,19 @@ export const api = {
   resolveDeck: (id: number) => request<Deck>("POST", `/api/decks/${id}/resolve`),
   preloadDeck: (id: number) => request<PreloadProgress>("POST", `/api/decks/${id}/preload`),
   addCard: (id: number, cardKey: string, section: string) => request<Deck>("POST", `/api/decks/${id}/cards`, { cardKey, section }),
-  matches: () => request<Match[]>("GET", "/api/matches"),
+  matches: () => request<MatchSummary[]>("GET", "/api/matches"),
   match: (id: number) => request<Match>("GET", `/api/matches/${id}`),
-  createMatch: (game: string, name: string, players: Omit<Player, "seat">[]) =>
-    request<Match>("POST", "/api/matches", { game, name, players }),
-  updateMatch: (id: number, name: string, players: Omit<Player, "seat">[]) =>
-    request<Match>("PUT", `/api/matches/${id}`, { name, players }),
+  createMatch: (game: string, name: string, format: string, players: Omit<Player, "seat">[]) =>
+    request<Match>("POST", "/api/matches", { game, name, format, players }),
+  updateMatch: (id: number, name: string, format: string, players: Omit<Player, "seat">[]) =>
+    request<Match>("PUT", `/api/matches/${id}`, { name, format, players }),
+  matchAction: (id: number, action: MatchAction) => request<{ state: MatchState; board: Board }>("POST", `/api/matches/${id}/action`, action),
+  activateMatch: (id: number) => request<Board>("POST", `/api/matches/${id}/activate`),
   deleteMatch: (id: number) => request<void>("DELETE", `/api/matches/${id}`),
   preloadMatch: (id: number) => request<PreloadProgress[]>("POST", `/api/matches/${id}/preload`),
   search: (game: string, q: string) => request<Card[]>("GET", `/api/search?game=${encodeURIComponent(game)}&q=${encodeURIComponent(q)}`),
-  show: (cardKey: string, playerName?: string, face = 0) => request<OverlayMessage>("POST", "/api/overlay/show", { cardKey, playerName, face }),
+  show: (cardKey: string, playerName?: string, seat?: number, face = 0) =>
+    request<OverlayMessage>("POST", "/api/overlay/show", { cardKey, playerName, seat, face }),
   flip: () => request<OverlayMessage>("POST", "/api/overlay/flip"),
   hide: () => request<void>("POST", "/api/overlay/hide"),
   settings: () => request<SettingsScope[]>("GET", "/api/settings"),

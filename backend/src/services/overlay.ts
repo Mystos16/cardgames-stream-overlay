@@ -3,6 +3,7 @@ import { splitCardKey, type Card, type OverlayMessage, type OverlayShowMessage }
 import type { FastifyBaseLogger } from "fastify";
 import type { EventHub } from "./events.ts";
 import type { ImageCache } from "./images.ts";
+import type { MatchService } from "./matches.ts";
 import type { PluginRegistry } from "./plugins.ts";
 import type { SettingsService } from "./settings.ts";
 
@@ -11,15 +12,17 @@ export class OverlayService {
   private readonly events: EventHub;
   private readonly plugins: PluginRegistry;
   private readonly settings: SettingsService;
+  private readonly matches: MatchService;
   private readonly log: FastifyBaseLogger;
   private current: OverlayShowMessage | null = null;
   private hideTimer: NodeJS.Timeout | undefined;
 
-  constructor(images: ImageCache, events: EventHub, plugins: PluginRegistry, settings: SettingsService, log: FastifyBaseLogger) {
+  constructor(images: ImageCache, events: EventHub, plugins: PluginRegistry, settings: SettingsService, matches: MatchService, log: FastifyBaseLogger) {
     this.images = images;
     this.events = events;
     this.plugins = plugins;
     this.settings = settings;
+    this.matches = matches;
     this.log = log;
   }
 
@@ -27,7 +30,7 @@ export class OverlayService {
     return this.current;
   }
 
-  async show(card: Card, face = 0, playerName?: string): Promise<OverlayShowMessage> {
+  async show(card: Card, face = 0, playerName?: string, seat?: number): Promise<OverlayShowMessage> {
     const paths = await this.images.ensureAll(card);
     const images = paths.map((path) => this.images.publicUrl(path));
     const message: OverlayShowMessage = {
@@ -37,6 +40,7 @@ export class OverlayService {
       face: Math.min(face, images.length - 1),
       images,
       playerName,
+      slot: this.matches.slotForSeat(seat),
     };
     this.current = message;
     this.broadcast(message);

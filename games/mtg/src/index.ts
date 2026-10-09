@@ -1,4 +1,5 @@
 import { PLUGIN_API_VERSION, defineGame, type GamePlugin } from "@cso/shared";
+import { MTG_FORMATS } from "./formats.ts";
 import { parseDecklist } from "./parser.ts";
 import { ScryfallClient } from "./scryfall.ts";
 
@@ -26,6 +27,7 @@ export default defineGame({
         maxPlayers: 6,
         expectedSizes: { main: { min: 40 }, commander: { max: 2 }, sideboard: { max: 15 } },
       },
+      formats: MTG_FORMATS,
       settingsSchema: {
         fields: [
           {

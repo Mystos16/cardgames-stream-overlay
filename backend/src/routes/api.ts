@@ -1,5 +1,5 @@
 import type { FastifyInstance } from "fastify";
-import type { Card } from "@cso/shared";
+import type { Card, MatchAction } from "@cso/shared";
 import type { App } from "../app.ts";
 
 function id(params: unknown): number {
@@ -17,6 +17,7 @@ export async function apiRoutes(server: FastifyInstance, app: App): Promise<void
       name: plugin.name,
       sections: plugin.sections,
       deckRules: plugin.deckRules,
+      formats: plugin.formats,
       canSearch: Boolean(plugin.searchCards),
     })),
   );
@@ -56,17 +57,20 @@ export async function apiRoutes(server: FastifyInstance, app: App): Promise<void
   server.get("/api/matches", async () => matches.list());
   server.get("/api/matches/:id", async (request) => matches.get(id(request.params)));
   server.post("/api/matches", async (request) => {
-    const body = request.body as { game: string; name: string; players?: { playerName: string; deckId: number | null }[] };
-    return matches.create(body.game, body.name, body.players ?? []);
+    const body = request.body as { game: string; name: string; format?: string; players?: { playerName: string; deckId: number | null }[] };
+    return matches.create(body.game, body.name, body.format, body.players ?? []);
   });
   server.put("/api/matches/:id", async (request) => {
-    const body = request.body as { name?: string; players?: { playerName: string; deckId: number | null }[] };
-    return matches.update(id(request.params), body.name, body.players);
+    const body = request.body as { name?: string; format?: string; players?: { playerName: string; deckId: number | null }[] };
+    return matches.update(id(request.params), body);
   });
   server.delete("/api/matches/:id", async (request, reply) => {
     await matches.remove(id(request.params));
     return reply.code(204).send();
   });
+  server.post("/api/matches/:id/action", async (request) => matches.act(id(request.params), request.body as MatchAction));
+  server.post("/api/matches/:id/activate", async (request) => matches.activate(id(request.params)));
+  server.get("/api/board", async () => matches.activeBoard());
   server.post("/api/matches/:id/preload", async (request) => matches.preload(id(request.params)));
 
   server.get("/api/search", async (request) => {
@@ -79,10 +83,10 @@ export async function apiRoutes(server: FastifyInstance, app: App): Promise<void
 
   server.get("/api/overlay", async () => overlay.state());
   server.post("/api/overlay/show", async (request) => {
-    const body = request.body as { cardKey: string; face?: number; playerName?: string };
+    const body = request.body as { cardKey: string; face?: number; playerName?: string; seat?: number };
     const card: Card | undefined = (await cards.get([body.cardKey])).get(body.cardKey);
     if (!card) throw Object.assign(new Error("unknown card"), { statusCode: 404 });
-    return overlay.show(card, body.face ?? 0, body.playerName);
+    return overlay.show(card, body.face ?? 0, body.playerName, body.seat);
   });
   server.post("/api/overlay/flip", async () => overlay.flip());
   server.post("/api/overlay/hide", async (_request, reply) => {

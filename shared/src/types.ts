@@ -1,3 +1,4 @@
+import type { FormatDef } from "./match.ts";
 import type { SettingsSchema, SettingsValues } from "./settings.ts";
 
 export const PLUGIN_API_VERSION = 1 as const;
@@ -83,6 +84,7 @@ export interface GamePlugin {
   name: string;
   sections: SectionDef[];
   deckRules?: DeckRules;
+  formats: FormatDef[];
   settingsSchema: SettingsSchema;
   rateLimit: { requestsPerSecond: number; batchSize?: number };
   userAgent?: string;

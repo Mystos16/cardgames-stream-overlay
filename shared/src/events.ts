@@ -1,3 +1,4 @@
+import type { Board, Slot } from "./match.ts";
 import type { Card } from "./types.ts";
 
 export interface OverlayShowMessage {
@@ -7,6 +8,7 @@ export interface OverlayShowMessage {
   face: number;
   images: string[];
   playerName?: string;
+  slot?: Slot;
 }
 
 export interface OverlayHideMessage {
@@ -18,7 +20,12 @@ export interface OverlayFlipMessage {
   face: number;
 }
 
-export type OverlayMessage = OverlayShowMessage | OverlayHideMessage | OverlayFlipMessage;
+export interface OverlayBoardMessage {
+  type: "board";
+  board: Board | null;
+}
+
+export type OverlayMessage = OverlayShowMessage | OverlayHideMessage | OverlayFlipMessage | OverlayBoardMessage;
 
 export interface PreloadProgress {
   deckId: number;
@@ -30,5 +37,6 @@ export interface PreloadProgress {
 
 export type ControlMessage =
   | { type: "overlay"; message: OverlayMessage | null }
+  | { type: "board"; board: Board | null }
   | { type: "preload"; progress: PreloadProgress }
   | { type: "image"; cardKey: string; faceIndex: number; status: "ready" | "failed" };

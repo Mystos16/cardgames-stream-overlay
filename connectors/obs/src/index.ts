@@ -17,16 +17,17 @@ export default defineConnector({
           { key: "height", label: "Browser Source height", type: "number", default: 1080, min: 240, max: 4320 },
           {
             key: "position",
-            label: "Card position",
+            label: "Card position for cards without a player (search results)",
             type: "select",
-            default: "right",
+            default: "center",
             options: [
               { value: "left", label: "Left" },
               { value: "center", label: "Center" },
               { value: "right", label: "Right" },
             ],
           },
-          { key: "cardHeight", label: "Card height (% of source)", type: "number", default: 70, min: 10, max: 100 },
+          { key: "cardHeight", label: "Maximum card height (% of source)", type: "number", default: 55, min: 10, max: 80 },
+          { key: "board", label: "Show player names, life and counters", type: "boolean", default: true },
         ],
       },
       async start(context) {
@@ -47,8 +48,9 @@ export default defineConnector({
         if (!ctx) return {};
         const settings = ctx.settings();
         const params = new URLSearchParams({
-          position: String(settings.position ?? "right"),
-          cardHeight: String(settings.cardHeight ?? 70),
+          position: String(settings.position ?? "center"),
+          cardHeight: String(settings.cardHeight ?? 55),
+          board: settings.board === false ? "0" : "1",
         });
         const base = ctx.overlayUrl();
         const url = `${base}${base.includes("?") ? "&" : "?"}${params}`;

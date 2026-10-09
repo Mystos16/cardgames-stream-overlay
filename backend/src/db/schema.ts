@@ -1,4 +1,5 @@
 import { sql } from "drizzle-orm";
+import type { MatchState } from "@cso/shared";
 import { index, integer, primaryKey, sqliteTable, text, uniqueIndex } from "drizzle-orm/sqlite-core";
 
 const createdAt = () =>
@@ -62,6 +63,8 @@ export const matches = sqliteTable("matches", {
   id: integer("id").primaryKey({ autoIncrement: true }),
   game: text("game").notNull(),
   name: text("name").notNull(),
+  format: text("format"),
+  state: text("state", { mode: "json" }).$type<MatchState>(),
   createdAt: createdAt(),
 });
 

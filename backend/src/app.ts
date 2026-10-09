@@ -45,8 +45,8 @@ export async function buildServer(config: Config): Promise<{ server: FastifyInst
   const images = new ImageCache(db, plugins, events, config.dataDir);
   const preload = new PreloadQueue(images, events, server.log);
   const decks = new DeckService(db, plugins, cards, preload, settings);
-  const matches = new MatchService(db, plugins, decks);
-  const overlay = new OverlayService(images, events, plugins, settings, server.log);
+  const matches = new MatchService(db, plugins, decks, events);
+  const overlay = new OverlayService(images, events, plugins, settings, matches, server.log);
   const app: App = { config, plugins, settings, events, cards, images, preload, decks, matches, overlay };
 
   await server.register(fastifyWebsocket);

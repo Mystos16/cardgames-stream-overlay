@@ -1,11 +1,12 @@
 <script lang="ts">
   import { onMount } from "svelte";
-  import { api, type Deck, type DeckEntryView, type Match } from "../../lib/api.ts";
+  import { api, type Deck, type DeckEntryView, type Match, type MatchSummary } from "../../lib/api.ts";
   import { attempt, gameById, live } from "../../lib/state.svelte.ts";
   import CardTile from "./CardTile.svelte";
+  import Scoreboard from "./Scoreboard.svelte";
   import SearchCards from "./SearchCards.svelte";
 
-  let matches = $state<Match[]>([]);
+  let matches = $state<MatchSummary[]>([]);
   let matchId = $state<number | null>(Number(localStorage.getItem("cso-match")) || null);
   let match = $state<Match | null>(null);
   let decks = $state<Record<number, Deck>>({});
@@ -37,6 +38,7 @@
       for (const player of loaded.players) if (player.deckId !== null) loadedDecks[player.deckId] = await api.deck(player.deckId);
       match = loaded;
       decks = loadedDecks;
+      if (live.board?.matchId !== loaded.id) await api.activateMatch(loaded.id);
     });
   });
 
@@ -55,6 +57,7 @@
   });
 
   const game = $derived(match ? gameById(match.game) : undefined);
+  const format = $derived(match ? game?.formats.find((item) => item.id === match!.format) : undefined);
 
   const items = $derived.by((): Item[] => {
     if (!match) return [];
@@ -106,7 +109,7 @@
   });
 
   function show(item: Item): void {
-    void attempt(() => api.show(item.entry.card!.key, item.playerName));
+    void attempt(() => api.show(item.entry.card!.key, item.playerName, item.seat));
   }
 
   function onKey(event: KeyboardEvent): void {
@@ -168,6 +171,11 @@
 {#if !match}
   <p class="muted">No match yet. Create one under Matches.</p>
 {:else}
+  {#if format}
+    {#key match.id}
+      <Scoreboard matchId={match.id} {format} initial={match.board} />
+    {/key}
+  {/if}
   {#each grouped as group (group.key)}
     <section>
       <h3>{group.title} <span class="muted">({group.items.reduce((sum, item) => sum + item.entry.quantity, 0)})</span></h3>

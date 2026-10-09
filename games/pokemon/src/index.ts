@@ -1,4 +1,5 @@
 import { PLUGIN_API_VERSION, defineGame, type GamePlugin } from "@cso/shared";
+import { POKEMON_FORMATS } from "./formats.ts";
 import { parseDecklist } from "./parser.ts";
 import { TcgdexClient } from "./tcgdex.ts";
 
@@ -17,6 +18,7 @@ export default defineGame({
         { id: "energy", name: "Energy" },
       ],
       deckRules: { minPlayers: 2, maxPlayers: 2, expectedSizes: { pokemon: { min: 1 } } },
+      formats: POKEMON_FORMATS,
       settingsSchema: {
         fields: [
           {

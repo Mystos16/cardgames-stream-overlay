@@ -15,6 +15,7 @@ function pipe<T>(socket: WebSocket, subscribe: (listener: (message: T) => void) 
 
 export async function wsRoutes(server: FastifyInstance, app: App): Promise<void> {
   server.get("/ws/overlay", { websocket: true }, (socket) => {
+    socket.send(JSON.stringify({ type: "board", board: app.matches.activeBoard() }));
     const current = app.overlay.state();
     socket.send(JSON.stringify(current ?? { type: "hide" }));
     pipe(socket, (listener) => app.events.overlay.subscribe(listener));
@@ -22,6 +23,7 @@ export async function wsRoutes(server: FastifyInstance, app: App): Promise<void>
 
   server.get("/ws/control", { websocket: true }, (socket) => {
     socket.send(JSON.stringify({ type: "overlay", message: app.overlay.state() }));
+    socket.send(JSON.stringify({ type: "board", board: app.matches.activeBoard() }));
     for (const progress of app.preload.status()) socket.send(JSON.stringify({ type: "preload", progress }));
     pipe(socket, (listener) => app.events.control.subscribe(listener));
   });
