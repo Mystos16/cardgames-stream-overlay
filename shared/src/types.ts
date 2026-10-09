@@ -69,6 +69,19 @@ export interface HttpRequestInit {
 
 export interface PluginHttp {
   json<T>(url: string, init?: HttpRequestInit): Promise<T>;
+  text(url: string, init?: HttpRequestInit): Promise<string>;
+}
+
+export interface DeckImportSource {
+  id: string;
+  name: string;
+  examples: string[];
+}
+
+export interface ImportedDeck {
+  name: string;
+  text: string;
+  source: string;
 }
 
 export interface GamePluginContext {
@@ -92,6 +105,8 @@ export interface GamePlugin {
   resolveCards(entries: DeckEntry[]): Promise<ResolvedCard[]>;
   relatedCards?(card: Card): Promise<Card[]>;
   searchCards?(query: string): Promise<Card[]>;
+  importSources?: DeckImportSource[];
+  importDeck?(url: string): Promise<ImportedDeck | null>;
 }
 
 export interface GamePluginFactory {

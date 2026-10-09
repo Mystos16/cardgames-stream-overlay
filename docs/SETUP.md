@@ -2,17 +2,70 @@
 
 This guide takes you from nothing to a card showing on stream in OBS.
 
-## 1. Choose how to run it
+## 1. Start the app
 
-| Option | Best for | Requirements |
+Docker Compose is the recommended way to run it. Node.js is an alternative if you
+don't want Docker.
+
+### Recommended: Docker Compose
+
+1. Install [Docker Desktop](https://www.docker.com/products/docker-desktop/) (Windows,
+   macOS) or Docker Engine with the compose plugin (Linux). Check with
+   `docker compose version`.
+2. In a terminal, from the project folder:
+
+   ```sh
+   docker compose up -d --build
+   ```
+
+   The first build takes a few minutes. After that it starts in seconds.
+3. Open <http://localhost:8080/control/>.
+
+Everyday commands, all from the project folder:
+
+| Task | Command |
+|---|---|
+| Start | `docker compose up -d` |
+| Stop | `docker compose down` |
+| Show logs | `docker compose logs -f app` |
+| Status | `docker compose ps` |
+| Update after `git pull` | `docker compose up -d --build` |
+
+The app restarts automatically with Docker (for example after a reboot) until you run
+`docker compose down`.
+
+Decks, matches, settings and the image cache live in the Docker volume
+`cardgames-stream-overlay_data`, so they survive stopping, updating and rebuilding.
+`docker compose down -v` deletes that volume and everything in it.
+
+#### Settings
+
+Copy `.env.example` to `.env` in the project folder and edit it, then run
+`docker compose up -d` again:
+
+| Variable | Default | Purpose |
 |---|---|---|
-| A. Node.js on the streaming PC | Simplest, single PC | Node.js 24+ |
-| B. Container | Running on a server or home lab | Docker, nerdctl or Kubernetes |
+| `PORT` | `8080` | Port on your PC. Change it if 8080 is already in use |
+| `BIND_ADDRESS` | `127.0.0.1` | `127.0.0.1` = only this PC. `0.0.0.0` = also other PCs on your network |
+| `PUBLIC_URL` | | Address shown as the OBS URL, e.g. `http://streampc.lan:8080` when OBS runs on another PC |
+| `LOG_LEVEL` | `info` | `debug` for more detail in the logs |
 
-The overlay must be reachable from the PC running OBS. If the app runs on the same PC
-as OBS, keep the defaults (it only listens on `127.0.0.1`).
+There is no login. Only use `BIND_ADDRESS=0.0.0.0` on a home network you trust.
 
-### Option A: Node.js
+#### Backup and restore with Docker
+
+```sh
+docker compose stop
+docker run --rm -v cardgames-stream-overlay_data:/data -v "$PWD":/backup alpine \
+  tar czf /backup/cso-backup.tgz -C /data app.db
+docker compose start
+```
+
+To restore, stop the app and extract the archive back into the volume with
+`tar xzf /backup/cso-backup.tgz -C /data` in the same kind of `docker run` command.
+The image cache is not included; it is downloaded again when you preload a match.
+
+### Alternative: Node.js
 
 1. Install [Node.js 24 or newer](https://nodejs.org/).
 2. In a terminal, from the project folder:
@@ -28,26 +81,15 @@ as OBS, keep the defaults (it only listens on `127.0.0.1`).
    instead.
 3. Open <http://localhost:8080/control/>.
 
-Data (database and image cache) is stored in `./data`. Copy `.env.example` to `.env`
-and edit it to change settings, or set environment variables directly.
+Data is stored in `./data`. Settings are read from `.env` in the project folder
+(`PORT`, `HOST`, `DATA_DIR`, `LOG_LEVEL`, `PUBLIC_URL`; see `.env.example`). Use
+`HOST=0.0.0.0` to make it reachable from other PCs.
 
-### Option B: Container
+### Developing
 
-```sh
-docker build -t cardgames-stream-overlay .
-docker run -d --name cso --restart unless-stopped \
-  -p 127.0.0.1:8080:8080 \
-  -v cso-data:/data \
-  cardgames-stream-overlay
-```
-
-Or with compose: `docker compose --profile prod up -d app`.
-
-Open `http://<host>:8080/control/`.
-
-To make the app reachable from another PC, publish the port on a LAN address
-(`-p 8080:8080`) instead of `127.0.0.1`. There is no login, so only do this on a
-trusted home network.
+`docker compose --profile dev up dev` runs the app with hot reload: open
+<http://localhost:5173/control/> and <http://localhost:5173/overlay/>. It uses its own
+data volume, separate from the normal app.
 
 ## 2. Configure games (optional)
 
@@ -156,18 +198,22 @@ Clicking a card does the same as `Enter`.
 | Symptom | Fix |
 |---|---|
 | Nothing appears in OBS | Open the overlay URL in a normal browser and show a card. If it works there, right click the source in OBS > **Refresh**. Check width/height |
-| Overlay works in browser but not in OBS on another PC | The app listens on `127.0.0.1` by default. Set `HOST=0.0.0.0` and open the port in your firewall |
+| Overlay works in browser but not in OBS on another PC | The app only accepts connections from its own PC by default. Docker: set `BIND_ADDRESS=0.0.0.0` and `PUBLIC_URL` in `.env`. Node.js: set `HOST=0.0.0.0`. Allow the port in your firewall |
+| `docker compose up` says the port is already allocated | Another program uses 8080. Set `PORT=8081` (or similar) in `.env` |
+| Control panel does not load after `docker compose up` | Check `docker compose logs app`; the first build must finish before the app starts |
 | Card shows a placeholder or "not found" | Fix the decklist line, or add the card with search |
 | Behind a reverse proxy the OBS URL is wrong | Set `PUBLIC_URL` to the external base URL |
 | Disk filling up | Switch MTG to Large JPG and clear the cache in Settings |
 
 ## Updating
 
+- Docker: `git pull`, then `docker compose up -d --build`.
 - Node.js: `git pull && pnpm install && pnpm build`, then restart `pnpm start`.
-- Container: rebuild the image and recreate the container. Data in the `/data` volume is
-  kept; database migrations run automatically at startup.
+
+Your data is kept; database changes are applied automatically at startup.
 
 ## Backup
 
-Everything lives in `DATA_DIR` (`./data` or the `/data` volume): `app.db` holds decks,
-matches and settings; `images/` is only a cache and can be deleted at any time.
+`app.db` holds decks, matches and settings; `images/` is only a cache and can be
+deleted at any time. With Docker both are in the `cardgames-stream-overlay_data` volume
+(see "Backup and restore with Docker" above); with Node.js they are in `./data`.

@@ -1,7 +1,20 @@
 name: cardgames-stream-overlay
 
 services:
+  app:
+    build: .
+    image: cardgames-stream-overlay:latest
+    restart: unless-stopped
+    environment:
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+      PUBLIC_URL: ${PUBLIC_URL:-}
+    ports:
+      - "${BIND_ADDRESS:-127.0.0.1}:${PORT:-8080}:8080"
+    volumes:
+      - data:/data
+
   dev:
+    profiles: ["dev"]
     image: node:24-slim
     working_dir: /app
     command: sh -c "corepack enable && pnpm install && pnpm dev"
@@ -17,16 +30,9 @@ services:
     volumes:
       - .:/app
       - node_modules:/app/node_modules
-      - data:/data
-
-  app:
-    profiles: ["prod"]
-    build: .
-    ports:
-      - "127.0.0.1:8080:8080"
-    volumes:
-      - data:/data
+      - dev-data:/data
 
 volumes:
-  node_modules:
   data:
+  node_modules:
+  dev-data:

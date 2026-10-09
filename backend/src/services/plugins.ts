@@ -41,6 +41,7 @@ export class PluginRegistry {
       const plugin = factory.create({
         http: {
           json: (url, init) => createPluginHttp(limiter, plugin.userAgent).json(url, init),
+          text: (url, init) => createPluginHttp(limiter, plugin.userAgent).text(url, init),
         },
         settings: () => settingsService.get(scope),
         env: (name) => process.env[name],

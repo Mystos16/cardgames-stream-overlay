@@ -4,20 +4,26 @@ import type { SettingsValues } from "../settings.ts";
 const silentLogger: Logger = { debug() {}, info() {}, warn() {}, error() {} };
 
 export function fetchHttp(userAgent = "cardgames-stream-overlay-tests/0.1"): PluginHttp {
+  const send = async (url: string, init: HttpRequestInit, accept: string) => {
+    const response = await fetch(url, {
+      method: init.method ?? "GET",
+      headers: {
+        "User-Agent": userAgent,
+        Accept: accept,
+        ...(init.body !== undefined ? { "Content-Type": "application/json" } : {}),
+        ...init.headers,
+      },
+      body: init.body !== undefined ? JSON.stringify(init.body) : undefined,
+    });
+    if (!response.ok) throw new Error(`HTTP ${response.status} for ${url}`);
+    return response;
+  };
   return {
     async json<T>(url: string, init: HttpRequestInit = {}): Promise<T> {
-      const response = await fetch(url, {
-        method: init.method ?? "GET",
-        headers: {
-          "User-Agent": userAgent,
-          Accept: "application/json",
-          ...(init.body !== undefined ? { "Content-Type": "application/json" } : {}),
-          ...init.headers,
-        },
-        body: init.body !== undefined ? JSON.stringify(init.body) : undefined,
-      });
-      if (!response.ok) throw new Error(`HTTP ${response.status} for ${url}`);
-      return (await response.json()) as T;
+      return (await (await send(url, init, "application/json")).json()) as T;
+    },
+    async text(url: string, init: HttpRequestInit = {}): Promise<string> {
+      return (await send(url, init, "text/html,text/plain")).text();
     },
   };
 }

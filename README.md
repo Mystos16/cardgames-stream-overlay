@@ -27,6 +27,18 @@ Fastify + Drizzle/SQLite backend, Svelte frontend, pnpm monorepo with `games/*` 
 
 ## Usage
 
+The recommended way is Docker Compose:
+
+```sh
+docker compose up -d --build   # http://localhost:8080/control/
+```
+
+See the [setup guide](docs/SETUP.md) for settings, updating, backups and adding the
+overlay to OBS. In OBS add a **Browser Source** with the URL shown under Settings in the
+control panel (default `http://localhost:8080/overlay/`, 1920x1080).
+
+### Without Docker
+
 Requirements: Node.js 24+ and pnpm (via `corepack enable`).
 
 ```sh
@@ -36,37 +48,23 @@ pnpm build            # builds the control panel and overlay
 pnpm start            # http://localhost:8080/control/
 ```
 
-Development with hot reload:
+### Development
 
 ```sh
-pnpm dev              # backend :8080, frontend :5173/control/ and :5173/overlay/
+pnpm dev                              # backend :8080, frontend :5173/control/ and :5173/overlay/
+docker compose --profile dev up dev   # the same, inside a container
 ```
-
-In OBS add a **Browser Source** with the URL shown under Settings in the control panel
-(default `http://localhost:8080/overlay/`, 1920x1080). During `pnpm dev` use
-`http://localhost:5173/overlay/` instead, or run `pnpm build` once.
-
-Keyboard shortcuts in the Live view: `/` focus filter, `Enter` show, `Esc` hide,
-`F` flip double faced card, arrow keys move the selection.
-
-### Container
-
-```sh
-docker build -t cardgames-stream-overlay .
-docker run --rm -p 127.0.0.1:8080:8080 \
-  -v cso-data:/data cardgames-stream-overlay
-```
-
-Open `http://localhost:8080/control/`. `docker compose up dev` runs the dev setup in a
-container.
 
 ### Configuration
+
+Set in `.env` (see `.env.example`); read by both Docker Compose and `pnpm start`.
 
 | Variable | Default | Purpose |
 |---|---|---|
 | `PORT` | `8080` | HTTP port |
-| `HOST` | `127.0.0.1` | Bind address. Use `0.0.0.0` to reach it from another PC on your LAN |
-| `DATA_DIR` | `./data` | SQLite database and image cache |
+| `BIND_ADDRESS` | `127.0.0.1` | Docker Compose only. `0.0.0.0` to reach it from another PC on your LAN |
+| `HOST` | `127.0.0.1` | Node.js only. Bind address, `0.0.0.0` for LAN access |
+| `DATA_DIR` | `./data` | Node.js only. SQLite database and image cache |
 | `LOG_LEVEL` | `info` | Fastify log level |
 | `PUBLIC_URL` | | Base URL used in the OBS URL when behind a proxy |
 

@@ -49,19 +49,23 @@ async function withRetries(limiter: RateLimiter, url: string, init: RequestInit,
 }
 
 export function createPluginHttp(limiter: RateLimiter, userAgent = USER_AGENT): PluginHttp {
+  const send = (url: string, init: HttpRequestInit, accept: string) =>
+    withRetries(limiter, url, {
+      method: init.method ?? "GET",
+      headers: {
+        "User-Agent": userAgent,
+        Accept: accept,
+        ...(init.body !== undefined ? { "Content-Type": "application/json" } : {}),
+        ...init.headers,
+      },
+      body: init.body !== undefined ? JSON.stringify(init.body) : undefined,
+    });
   return {
     async json<T>(url: string, init: HttpRequestInit = {}): Promise<T> {
-      const response = await withRetries(limiter, url, {
-        method: init.method ?? "GET",
-        headers: {
-          "User-Agent": userAgent,
-          Accept: "application/json;q=0.9,*/*;q=0.8",
-          ...(init.body !== undefined ? { "Content-Type": "application/json" } : {}),
-          ...init.headers,
-        },
-        body: init.body !== undefined ? JSON.stringify(init.body) : undefined,
-      });
-      return (await response.json()) as T;
+      return (await (await send(url, init, "application/json;q=0.9,*/*;q=0.8")).json()) as T;
+    },
+    async text(url: string, init: HttpRequestInit = {}): Promise<string> {
+      return (await send(url, init, "text/html,text/plain;q=0.9,*/*;q=0.8")).text();
     },
   };
 }
