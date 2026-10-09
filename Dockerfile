@@ -13,8 +13,7 @@ FROM base AS manifests
 COPY package.json pnpm-workspace.yaml pnpm-lock.yaml* ./
 COPY shared/package.json shared/
 COPY backend/package.json backend/
-COPY frontend/control/package.json frontend/control/
-COPY frontend/overlay/package.json frontend/overlay/
+COPY frontend/package.json frontend/
 COPY games/mtg/package.json games/mtg/
 COPY games/pokemon/package.json games/pokemon/
 COPY connectors/obs/package.json connectors/obs/
@@ -50,8 +49,7 @@ COPY --from=build /app/connectors ./connectors
 COPY --from=build /app/backend/package.json ./backend/
 COPY --from=build /app/backend/src ./backend/src
 COPY --from=build /app/backend/drizzle ./backend/drizzle
-COPY --from=build /app/frontend/control/dist ./frontend/control/dist
-COPY --from=build /app/frontend/overlay/dist ./frontend/overlay/dist
+COPY --from=build /app/frontend/dist ./frontend/dist
 
 RUN mkdir -p /data && chown node:node /data
 USER node

@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { DeckEntryView } from "../lib/api.ts";
+  import type { DeckEntryView } from "../../lib/api.ts";
 
   let { entry, active = false, focused = false, onshow }: { entry: DeckEntryView; active?: boolean; focused?: boolean; onshow: () => void } =
     $props();

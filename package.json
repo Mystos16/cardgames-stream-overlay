@@ -9,8 +9,8 @@
   "scripts": {
     "registry": "node scripts/generate-registry.mjs",
     "postinstall": "node scripts/generate-registry.mjs",
-    "dev": "pnpm registry && pnpm --parallel --filter backend --filter control --filter overlay dev",
-    "build": "pnpm registry && pnpm --filter control --filter overlay build",
+    "dev": "pnpm registry && pnpm --parallel --filter backend --filter frontend dev",
+    "build": "pnpm registry && pnpm --filter frontend build",
     "start": "pnpm --filter backend start",
     "db:generate": "pnpm --filter backend db:generate",
     "typecheck": "pnpm -r typecheck",

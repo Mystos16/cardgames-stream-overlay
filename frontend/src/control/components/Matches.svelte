@@ -1,7 +1,7 @@
 <script lang="ts">
   import { onMount } from "svelte";
-  import { api, type DeckSummary, type Match } from "../lib/api.ts";
-  import { attempt, gameById, live } from "../lib/state.svelte.ts";
+  import { api, type DeckSummary, type Match } from "../../lib/api.ts";
+  import { attempt, gameById, live } from "../../lib/state.svelte.ts";
 
   let { onopen }: { onopen: () => void } = $props();
 

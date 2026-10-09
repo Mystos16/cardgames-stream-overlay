@@ -1,8 +1,8 @@
 <script lang="ts">
   import { onMount } from "svelte";
   import type { SettingsValues } from "@cso/shared";
-  import { api, type ConnectorInfo, type SettingsScope } from "../lib/api.ts";
-  import { attempt, live } from "../lib/state.svelte.ts";
+  import { api, type ConnectorInfo, type SettingsScope } from "../../lib/api.ts";
+  import { attempt, live } from "../../lib/state.svelte.ts";
 
   let scopes = $state<SettingsScope[]>([]);
   let cache = $state<{ bytes: number; files: number } | null>(null);

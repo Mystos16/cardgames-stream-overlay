@@ -3,7 +3,6 @@ import { join } from "node:path";
 import Fastify, { type FastifyInstance } from "fastify";
 import fastifyStatic from "@fastify/static";
 import fastifyWebsocket from "@fastify/websocket";
-import { requireRole } from "./auth.ts";
 import type { Config } from "./config.ts";
 import { openDatabase } from "./db/client.ts";
 import { apiRoutes } from "./routes/api.ts";
@@ -54,31 +53,22 @@ export async function buildServer(config: Config): Promise<{ server: FastifyInst
 
   server.get("/healthz", async () => ({ status: "ok" }));
 
-  await server.register(async (scope) => {
-    scope.addHook("onRequest", requireRole(config, ["control"]));
-    await apiRoutes(scope, app);
-  });
-
-  await server.register(async (scope) => {
-    scope.addHook("onRequest", requireRole(config, ["control", "overlay"]));
-    await scope.register(fastifyStatic, {
-      root: images.root,
-      prefix: "/images/",
-      decorateReply: false,
-      maxAge: "365d",
-      immutable: true,
-    });
+  await apiRoutes(server, app);
+  await server.register(fastifyStatic, {
+    root: images.root,
+    prefix: "/images/",
+    decorateReply: false,
+    maxAge: "365d",
+    immutable: true,
   });
 
   await wsRoutes(server, app);
 
-  for (const name of ["control", "overlay"]) {
-    const dir = join(config.staticDir, name, "dist");
-    if (!existsSync(dir)) {
-      server.log.warn({ dir }, `${name} frontend not built; run 'pnpm build' or use the Vite dev server`);
-      continue;
-    }
-    await server.register(fastifyStatic, { root: dir, prefix: `/${name}/`, decorateReply: false });
+  const dist = join(config.staticDir, "dist");
+  if (existsSync(dist)) {
+    await server.register(fastifyStatic, { root: dist, prefix: "/", decorateReply: false });
+  } else {
+    server.log.warn({ dist }, "frontend not built; run 'pnpm build' or use the Vite dev server");
   }
   server.get("/", async (_request, reply) => reply.redirect("/control/"));
 
@@ -86,10 +76,7 @@ export async function buildServer(config: Config): Promise<{ server: FastifyInst
   for (const connector of plugins.connectors.values()) {
     await connector.start({
       publicBaseUrl: publicBase,
-      overlayUrl: () => {
-        const token = config.overlayToken ? `?token=${encodeURIComponent(config.overlayToken)}` : "";
-        return `${publicBase()}/overlay/${token}`;
-      },
+      overlayUrl: () => `${publicBase()}/overlay/`,
       settings: () => settings.get(`connector:${connector.id}`),
       env: (name) => process.env[name],
       logger: pluginLogger(server.log, connector.id),

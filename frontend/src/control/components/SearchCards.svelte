@@ -1,7 +1,7 @@
 <script lang="ts">
   import type { Card } from "@cso/shared";
-  import { api } from "../lib/api.ts";
-  import { attempt } from "../lib/state.svelte.ts";
+  import { api } from "../../lib/api.ts";
+  import { attempt } from "../../lib/state.svelte.ts";
 
   let { gameId, onshow, actionLabel = "Show", onaction }: { gameId: string; onshow?: (card: Card) => void; actionLabel?: string; onaction?: (card: Card) => void } =
     $props();

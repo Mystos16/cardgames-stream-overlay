@@ -37,12 +37,12 @@ pnpm start            # http://localhost:8080/control/
 Development with hot reload:
 
 ```sh
-pnpm dev              # backend :8080, control :5173/control/, overlay :5174/overlay/
+pnpm dev              # backend :8080, frontend :5173/control/ and :5173/overlay/
 ```
 
 In OBS add a **Browser Source** with the URL shown under Settings in the control panel
 (default `http://localhost:8080/overlay/`, 1920x1080). During `pnpm dev` use
-`http://localhost:5174/overlay/` instead, or run `pnpm build` once.
+`http://localhost:5173/overlay/` instead, or run `pnpm build` once.
 
 Keyboard shortcuts in the Live view: `/` focus filter, `Enter` show, `Esc` hide,
 `F` flip double faced card, arrow keys move the selection.
@@ -52,12 +52,10 @@ Keyboard shortcuts in the Live view: `/` focus filter, `Enter` show, `Esc` hide,
 ```sh
 docker build -t cardgames-stream-overlay .
 docker run --rm -p 127.0.0.1:8080:8080 \
-  -e CONTROL_TOKEN=change-me -e OVERLAY_TOKEN=change-me-too \
   -v cso-data:/data cardgames-stream-overlay
 ```
 
-Open `http://localhost:8080/control/?token=<CONTROL_TOKEN>`. The container listens on
-`0.0.0.0`, so both tokens are required. `docker compose up dev` runs the dev setup in a
+Open `http://localhost:8080/control/`. `docker compose up dev` runs the dev setup in a
 container.
 
 ### Configuration
@@ -65,11 +63,9 @@ container.
 | Variable | Default | Purpose |
 |---|---|---|
 | `PORT` | `8080` | HTTP port |
-| `HOST` | `127.0.0.1` | Bind address. Anything other than localhost requires tokens |
+| `HOST` | `127.0.0.1` | Bind address. Use `0.0.0.0` to reach it from another PC on your LAN |
 | `DATA_DIR` | `./data` | SQLite database and image cache |
 | `LOG_LEVEL` | `info` | Fastify log level |
-| `CONTROL_TOKEN` | | Protects the control panel and API |
-| `OVERLAY_TOKEN` | | Read-only token for the overlay URL |
 | `PUBLIC_URL` | | Base URL used in the OBS URL when behind a proxy |
 
 ### Tests and database migrations

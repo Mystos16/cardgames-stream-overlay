@@ -1,8 +1,8 @@
 <script lang="ts">
   import { onMount } from "svelte";
   import type { ParseWarning } from "@cso/shared";
-  import { api, type Deck, type DeckSummary } from "../lib/api.ts";
-  import { attempt, gameById, live } from "../lib/state.svelte.ts";
+  import { api, type Deck, type DeckSummary } from "../../lib/api.ts";
+  import { attempt, gameById, live } from "../../lib/state.svelte.ts";
   import SearchCards from "./SearchCards.svelte";
 
   let list = $state<DeckSummary[]>([]);

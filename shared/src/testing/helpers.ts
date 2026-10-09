@@ -35,7 +35,7 @@ export function createTestGameContext(overrides: Partial<GamePluginContext> = {}
 export function createTestConnectorContext(settings: SettingsValues = {}): ConnectorContext {
   return {
     publicBaseUrl: () => "http://localhost:8080",
-    overlayUrl: () => "http://localhost:8080/overlay/?token=test",
+    overlayUrl: () => "http://localhost:8080/overlay/",
     settings: () => settings,
     env: (name) => process.env[name],
     logger: silentLogger,

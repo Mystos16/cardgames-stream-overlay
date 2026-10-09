@@ -32,8 +32,9 @@ cardgames-stream-overlay/
 ├── backend/            # Fastify: REST API, WebSocket, Drizzle + SQLite,
 │                       # image cache + download queue, plugin registry
 ├── frontend/
-│   ├── control/        # control panel (Svelte)
-│   └── overlay/        # shared overlay renderer (Svelte), used by connectors
+│   ├── control/        # page entry: control panel
+│   ├── overlay/        # page entry: overlay renderer, used by connectors
+│   └── src/            # one Svelte app: control/, overlay/, shared lib/
 ├── games/
 │   ├── mtg/            # decklist parser, Scryfall client, sections, token logic
 │   └── pokemon/        # decklist parser, Pokemon card API client, sections
@@ -173,9 +174,8 @@ Design consequences:
 
 ## Security
 
-- Binds to `localhost` by default.
-- When exposed (network, Kubernetes): control token required for the control panel and
-  API, separate read-only token for the overlay URL.
+- Intended for local use only, there is no authentication.
+- Binds to `localhost` by default. Set `HOST=0.0.0.0` only on a trusted network.
 - Secrets (e.g. Pokemon API key) only via environment variables, never stored in the
   database or shown in the UI.
 
@@ -184,8 +184,7 @@ Design consequences:
 - Single multi-stage image: build frontend and plugins, then a slim Node runtime.
 - Port `8080`, non-root user, `/healthz` endpoint.
 - Volume `/data` holds `app.db` and `images/`.
-- Config via environment: `PORT`, `HOST`, `DATA_DIR`, `LOG_LEVEL`, `CONTROL_TOKEN`,
-  `OVERLAY_TOKEN`, `POKEMONTCG_API_KEY`.
+- Config via environment: `PORT`, `HOST`, `DATA_DIR`, `LOG_LEVEL`, `PUBLIC_URL`.
 - `compose.yaml` for local development with hot reload.
 
 ## External APIs

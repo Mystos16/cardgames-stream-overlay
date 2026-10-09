@@ -37,22 +37,17 @@ and edit it to change settings, or set environment variables directly.
 docker build -t cardgames-stream-overlay .
 docker run -d --name cso --restart unless-stopped \
   -p 127.0.0.1:8080:8080 \
-  -e CONTROL_TOKEN=<long-random-string> \
-  -e OVERLAY_TOKEN=<another-long-random-string> \
   -v cso-data:/data \
   cardgames-stream-overlay
 ```
 
-Or with compose: put `CONTROL_TOKEN` and `OVERLAY_TOKEN` in `.env`, then run
-`docker compose --profile prod up -d app`.
+Or with compose: `docker compose --profile prod up -d app`.
 
-Open `http://<host>:8080/control/?token=<CONTROL_TOKEN>` once. The browser remembers
-the token and removes it from the address bar.
+Open `http://<host>:8080/control/`.
 
 To make the app reachable from another PC, publish the port on a LAN address
-(`-p 8080:8080`) instead of `127.0.0.1`. Tokens are always required in a container.
-
-Generate tokens with for example `openssl rand -hex 24`.
+(`-p 8080:8080`) instead of `127.0.0.1`. There is no login, so only do this on a
+trusted home network.
 
 ## 2. Configure games (optional)
 
@@ -92,7 +87,7 @@ works if the internet connection drops. Progress is shown per deck.
 ## 5. Add the overlay to OBS
 
 1. In the control panel open **Settings** and copy the **OBS Browser Source URL**. It
-   already contains the position, card size and (when set) the overlay token.
+   already contains the position and card size.
 2. In OBS: **Sources** > **+** > **Browser**, name it e.g. "Card overlay".
 3. Paste the URL, set **Width** `1920` and **Height** `1080` (match your canvas, and
    the values in Settings).
@@ -100,9 +95,6 @@ works if the internet connection drops. Progress is shown per deck.
 5. Optional: enable **Refresh browser when scene becomes active** if you switch scenes
    often.
 6. Place the source above your game capture.
-
-Use the overlay token in OBS, never the control token: the overlay token can only
-display cards.
 
 Streamlabs and other software that supports a browser source work the same way.
 
@@ -125,8 +117,7 @@ Clicking a card does the same as `Enter`.
 | Symptom | Fix |
 |---|---|
 | Nothing appears in OBS | Open the overlay URL in a normal browser and show a card. If it works there, right click the source in OBS > **Refresh**. Check width/height |
-| `401` / control panel asks for a token | Add `?token=<CONTROL_TOKEN>` to the URL |
-| Overlay works in browser but not in OBS on another PC | The app listens on `127.0.0.1` by default. Set `HOST=0.0.0.0` (requires tokens) and open the port in your firewall |
+| Overlay works in browser but not in OBS on another PC | The app listens on `127.0.0.1` by default. Set `HOST=0.0.0.0` and open the port in your firewall |
 | Card shows a placeholder or "not found" | Fix the decklist line, or add the card with search |
 | Behind a reverse proxy the OBS URL is wrong | Set `PUBLIC_URL` to the external base URL |
 | Disk filling up | Switch MTG to Large JPG and clear the cache in Settings |

@@ -1,7 +1,7 @@
 <script lang="ts">
   import { onMount } from "svelte";
-  import { api, type Deck, type DeckEntryView, type Match } from "../lib/api.ts";
-  import { attempt, gameById, live } from "../lib/state.svelte.ts";
+  import { api, type Deck, type DeckEntryView, type Match } from "../../lib/api.ts";
+  import { attempt, gameById, live } from "../../lib/state.svelte.ts";
   import CardTile from "./CardTile.svelte";
   import SearchCards from "./SearchCards.svelte";
 

@@ -1,31 +1,5 @@
 import type { Card, ControlMessage, DeckRules, OverlayMessage, ParseWarning, PreloadProgress, SectionDef, SettingsSchema, SettingsValues } from "@cso/shared";
 
-const TOKEN_KEY = "cso-control-token";
-
-export function initToken(): void {
-  const params = new URLSearchParams(location.search);
-  const token = params.get("token");
-  if (token) {
-    localStorage.setItem(TOKEN_KEY, token);
-    params.delete("token");
-    const query = params.toString();
-    history.replaceState(null, "", `${location.pathname}${query ? `?${query}` : ""}`);
-  }
-}
-
-export function token(): string | null {
-  return localStorage.getItem(TOKEN_KEY);
-}
-
-export function setToken(value: string): void {
-  localStorage.setItem(TOKEN_KEY, value);
-}
-
-export function withToken(url: string): string {
-  const value = token();
-  return value ? `${url}${url.includes("?") ? "&" : "?"}token=${encodeURIComponent(value)}` : url;
-}
-
 export class ApiError extends Error {
   status: number;
   constructor(status: number, message: string) {
@@ -36,8 +10,6 @@ export class ApiError extends Error {
 
 async function request<T>(method: string, path: string, body?: unknown): Promise<T> {
   const headers: Record<string, string> = {};
-  const value = token();
-  if (value) headers.Authorization = `Bearer ${value}`;
   if (body !== undefined) headers["Content-Type"] = "application/json";
   const response = await fetch(path, { method, headers, body: body !== undefined ? JSON.stringify(body) : undefined });
   if (!response.ok) {
@@ -144,7 +116,7 @@ export function connectControl(onMessage: (message: ControlMessage) => void, onS
   let delay = 1000;
   const open = () => {
     const protocol = location.protocol === "https:" ? "wss:" : "ws:";
-    const socket = new WebSocket(withToken(`${protocol}//${location.host}/ws/control`));
+    const socket = new WebSocket(`${protocol}//${location.host}/ws/control`);
     socket.onopen = () => {
       delay = 1000;
       onState(true);

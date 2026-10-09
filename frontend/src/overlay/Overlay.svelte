@@ -2,7 +2,6 @@
   import type { OverlayMessage, OverlayShowMessage } from "@cso/shared";
 
   const params = new URLSearchParams(location.search);
-  const token = params.get("token");
   const position = params.get("position") ?? "right";
   const cardHeight = Math.min(100, Math.max(10, Number(params.get("cardHeight") ?? 70)));
   const debug = params.has("debug");
@@ -10,11 +9,6 @@
   let current = $state<OverlayShowMessage | null>(null);
   let visible = $state(false);
   let connected = $state(false);
-
-  function withToken(url: string): string {
-    if (!token) return url;
-    return `${url}${url.includes("?") ? "&" : "?"}token=${encodeURIComponent(token)}`;
-  }
 
   function preload(urls: string[]): Promise<void> {
     return Promise.all(
@@ -31,7 +25,7 @@
 
   async function handle(message: OverlayMessage): Promise<void> {
     if (message.type === "show") {
-      const next = { ...message, images: message.images.map(withToken) };
+      const next = message;
       await preload(next.images);
       if (current && visible && current.id !== next.id) {
         visible = false;
@@ -48,7 +42,7 @@
 
   function connect(delay = 1000): void {
     const protocol = location.protocol === "https:" ? "wss:" : "ws:";
-    const socket = new WebSocket(withToken(`${protocol}//${location.host}/ws/overlay`));
+    const socket = new WebSocket(`${protocol}//${location.host}/ws/overlay`);
     socket.onopen = () => {
       connected = true;
       delay = 1000;
